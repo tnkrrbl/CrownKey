@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wolf Pack — Setup Your AI Harness</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #e8e8e8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111;
+      border-bottom: 1px solid #222;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    header span {
+      font-size: 20px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .badge {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      color: #7c7cff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .intro {
+      margin-bottom: 40px;
+    }
+
+    .intro h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .intro p {
+      color: #888;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .intro p strong {
+      color: #ccc;
+    }
+
+    .step {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .step-num {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      color: #7c7cff;
+      font-size: 12px;
+      font-weight: 700;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    label .hint {
+      font-weight: 400;
+      color: #555;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid #252525;
+      border-radius: 8px;
+      color: #e8e8e8;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #3a3a6a;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    select option { background: #111; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #444;
+      margin: 24px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    .generate-btn {
+      width: 100%;
+      background: #7c7cff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 16px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.15s;
+      letter-spacing: -0.2px;
+    }
+
+    .generate-btn:hover { background: #6a6aee; }
+
+    #output-section {
+      display: none;
+      margin-top: 32px;
+    }
+
+    #output-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    #output-section p {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    #output {
+      background: #0d0d0d;
+      border: 1px solid #252525;
+      border-radius: 10px;
+      padding: 20px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #ccc;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .copy-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #aaa;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { background: #222; color: #fff; }
+    .copy-btn.copied { background: #0d2a0d; border-color: #1a4a1a; color: #4caf50; }
+
+    .install-block {
+      background: #0d0d0d;
+      border: 1px solid #1a2a1a;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+
+    .install-block p {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .install-block code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #7c7cff;
+      background: #111;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: block;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Wolf Pack</h1>
+  <span>/</span>
+  <h1 style="font-weight:400">AI Harness Setup</h1>
+  <div style="flex:1"></div>
+  <span class="badge">Pre-Class</span>
+</header>
+
+<div class="container">
+  <div class="intro">
+    <h2>Build your personal AI harness</h2>
+    <p>
+      Fill this out before class and Claude will know your business from minute one.
+      <strong>Takes about 5 minutes.</strong> The more detail you add, the better
+      every session with Claude will be.
+    </p>
+  </div>
+
+  <!-- STEP 1: About You -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <h3>About You & Your Business</h3>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="name" placeholder="Jane Smith">
+      </div>
+      <div class="field">
+        <label>Company name</label>
+        <input type="text" id="company" placeholder="Smith Property Management">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>City / Area you manage in</label>
+        <input type="text" id="city" placeholder="Austin, TX">
+      </div>
+      <div class="field">
+        <label>Total units managed</label>
+        <input type="number" id="units" placeholder="47">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>A few of your properties <span class="hint">— one per line, e.g. "123 Main St — 12 units — mostly residential"</span></label>
+      <textarea id="properties" placeholder="123 Main St — 8 units — all occupied&#10;456 Oak Ave — 4 units — 1 vacant&#10;789 Pine Rd — single family — long-term tenant"></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 2: Tech Stack -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <h3>Your Tech Stack</h3>
+    </div>
+
+    <p style="color:#666;font-size:13px;margin-bottom:18px;">
+      Claude uses this to connect to your existing tools instead of reinventing them.
+      If you don't use something, leave it blank.
+    </p>
+
+    <div class="section-label">Core Operations</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Property Management Software</label>
+        <select id="pm-software">
+          <option value="">Select or type below</option>
+          <option>AppFolio</option>
+          <option>Buildium</option>
+          <option>Yardi</option>
+          <option>Propertyware</option>
+          <option>Rent Manager</option>
+          <option>DoorLoop</option>
+          <option>TenantCloud</option>
+          <option>Hemlane</option>
+          <option>Rentec Direct</option>
+          <option>ManageCasa</option>
+          <option>Other / None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>What you still do manually in your PM software</label>
+        <input type="text" id="pm-manual" placeholder="e.g. owner reports, late rent tracking">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Process / Workflow Software</label>
+        <select id="process-software">
+          <option value="">Select or type below</option>
+          <option>LeadSimple</option>
+          <option>Aptly</option>
+          <option>Process Street</option>
+          <option>Monday.com</option>
+          <option>Notion</option>
+          <option>Trello</option>
+          <option>ClickUp</option>
+          <option>Asana</option>
+          <option>None</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Accounting</label>
+        <select id="accounting">
+          <option value="">Select or type below</option>
+          <option>QuickBooks</option>
+          <option>Wave</option>
+          <option>Xero</option>
+          <option>Built into PM software</option>
+          <option>Excel / Spreadsheet</option>
+          <option>None</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">Communication</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Email System</label>
+        <select id="email">
+          <option value="">Select or type below</option>
+          <option>Gmail (Google Workspace)</option>
+          <option>Gmail (personal)</option>
+          <option>Outlook (Microsoft 365)</option>
+          <option>Outlook (personal)</option>
+          <option>Zoho Mail</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Internal Team Communication</label>
+        <select id="internal-comms">
+          <option value="">Select or type below</option>
+          <option>Slack</option>
+          <option>Microsoft Teams</option>
+          <option>Google Chat</option>
+          <option>Discord</option>
+          <option>Just email / text</option>
+          <option>None — solo operation</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Tenant Texting / Messaging</label>
+        <select id="texting">
+          <option value="">Select or type below</option>
+          <option>Personal cell phone</option>
+          <option>OpenPhone</option>
+          <option>Twilio</option>
+          <option>Google Voice</option>
+          <option>Built into PM software</option>
+          <option>Podio</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Phone System</label>
+        <select id="phone">
+          <option value="">Select or type below</option>
+          <option>Personal cell</option>
+          <option>RingCentral</option>
+          <option>Zoom Phone</option>
+          <option>Google Voice</option>
+          <option>Grasshopper</option>
+          <option>OpenPhone</option>
+          <option>Dialpad</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">Leasing & Finance</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Lease / Document Signing</label>
+        <select id="signing">
+          <option value="">Select or type below</option>
+          <option>DocuSign</option>
+          <option>HelloSign (Dropbox Sign)</option>
+          <option>DotLoop</option>
+          <option>Adobe Sign</option>
+          <option>Built into PM software</option>
+          <option>Email PDF</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Rent Collection / Payments</label>
+        <select id="payments">
+          <option value="">Select or type below</option>
+          <option>Built into PM software</option>
+          <option>Stripe</option>
+          <option>PaySimple</option>
+          <option>Zelle</option>
+          <option>Check / cash</option>
+          <option>Mix of methods</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">Maintenance</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Maintenance Coordination</label>
+        <select id="maintenance">
+          <option value="">Select or type below</option>
+          <option>Built into PM software</option>
+          <option>Latchel</option>
+          <option>Phone / email directly</option>
+          <option>Maintenance Connection</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Where your vendor list lives</label>
+        <input type="text" id="vendors" placeholder="e.g. Google Contacts, spreadsheet, PM software">
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Pain Points -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <h3>Your Biggest Manual Pain</h3>
+    </div>
+
+    <div class="field">
+      <label>The one thing you do manually every week that takes the most time</label>
+      <textarea id="pain1" placeholder="e.g. I manually text every tenant whose rent is 5 days late. Takes about 45 minutes each time." style="min-height:70px"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Second biggest time sink <span class="hint">optional</span></label>
+      <textarea id="pain2" placeholder="e.g. I rebuild the same owner report spreadsheet every month from scratch." style="min-height:70px"></textarea>
+    </div>
+  </div>
+
+  <button class="generate-btn" onclick="generate()">Generate My CLAUDE.md →</button>
+
+  <!-- OUTPUT -->
+  <div id="output-section">
+    <h3>Your CLAUDE.md is ready</h3>
+    <p>Copy all of this text. On your server, run: <code style="background:#111;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:#7c7cff">cat > /root/wolf-pack/CLAUDE.md</code> — paste this, then press Ctrl+D to save.</p>
+    <pre id="output"></pre>
+    <button class="copy-btn" id="copy-btn" onclick="copyOutput()">Copy to clipboard</button>
+
+    <div class="install-block">
+      <p>Or paste this command into your server terminal to download it directly:</p>
+      <code id="curl-command"></code>
+    </div>
+  </div>
+</div>
+
+<script>
+function val(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  return el.value.trim();
+}
+
+function generate() {
+  const name = val('name') || '[YOUR NAME]';
+  const company = val('company') || '[YOUR COMPANY NAME]';
+  const city = val('city') || '[CITY/AREA]';
+  const units = val('units') || '[NUMBER]';
+  const properties = val('properties') || '[List your properties here — one per line]';
+  const pmSoftware = val('pm-software') || 'Not specified';
+  const pmManual = val('pm-manual') || 'Not specified';
+  const processSoftware = val('process-software') || 'None';
+  const accounting = val('accounting') || 'Not specified';
+  const email = val('email') || 'Not specified';
+  const internalComms = val('internal-comms') || 'Not specified';
+  const texting = val('texting') || 'Not specified';
+  const phone = val('phone') || 'Not specified';
+  const signing = val('signing') || 'Not specified';
+  const payments = val('payments') || 'Not specified';
+  const maintenance = val('maintenance') || 'Not specified';
+  const vendors = val('vendors') || 'Not specified';
+  const pain1 = val('pain1') || 'Not specified';
+  const pain2 = val('pain2');
+
+  const propsFormatted = properties.split('\n').map(p => p.trim()).filter(Boolean).map(p => `- ${p}`).join('\n');
+
+  const md = `# My AI Assistant — Wolf Pack Property Management Harness
+
+## Who I Am
+
+My name is ${name}. I am a property manager.
+My company is called ${company}.
+I manage ${units} units across ${city}.
+
+I am NOT a software developer. I am a business operator who wants to use AI
+to automate repetitive tasks and run my business better. When I ask you to
+build something, keep it as simple as possible. Simple is better than clever.
+
+---
+
+## How I Want You to Work With Me
+
+**Ask before you build.** Before writing any code, tell me in plain English
+what you plan to do and why. One sentence. Then ask if I want to proceed.
+
+**One thing at a time.** Do not build more than I asked for. If you notice
+something worth fixing, tell me — do not fix it without asking.
+
+**Explain like I'm smart but not a developer.** I understand my business deeply.
+I do not know what "API," "schema," or "refactor" means. Use plain language.
+If you must use a technical word, define it in parentheses the first time.
+
+**Test before telling me it's done.** Run it. Make sure it works.
+Do not tell me something is finished until you've verified it yourself.
+
+**If something could break, warn me first.**
+
+---
+
+## My Business — What I Do Every Day
+
+These are the tasks I do manually today that I want to automate:
+
+### Tenant Management
+- Track lease start and end dates
+- Send renewal reminders (60 days and 30 days before expiration)
+- Log tenant complaints and maintenance requests
+- Track late rent payments and send reminder notices
+
+### Maintenance & Vendors
+- Log maintenance requests with photos and descriptions
+- Assign work orders to vendors
+- Track whether work was completed and at what cost
+- Schedule annual inspections
+
+### Owner Reporting
+- Send monthly reports to property owners
+- Track income and expenses per property
+- Summarize vacancy rates
+
+### Leasing
+- Track vacant units and days on market
+- Log showings and applicant info
+- Track application status
+
+---
+
+## My Biggest Pain Points (start here)
+
+1. ${pain1}${pain2 ? `\n2. ${pain2}` : ''}
+
+---
+
+## My Properties
+
+${propsFormatted}
+
+---
+
+## My Tech Stack
+
+When building something for me, always check this list first.
+Prefer connecting to tools I already use over building something new.
+If a tool I listed has an API, tell me what's possible before we start.
+
+### Property Management Software
+- I use: ${pmSoftware}
+- Still doing manually: ${pmManual}
+
+### Process & Workflow Software
+- I use: ${processSoftware}
+
+### Email
+- I use: ${email}
+
+### Internal Team Communication
+- I use: ${internalComms}
+
+### Phone System
+- I use: ${phone}
+
+### Tenant Texting / Messaging
+- I use: ${texting}
+
+### Lease & Document Signing
+- I use: ${signing}
+
+### Rent Collection & Payments
+- I use: ${payments}
+
+### Accounting
+- I use: ${accounting}
+
+### Maintenance Coordination
+- I use: ${maintenance}
+- Vendor list lives in: ${vendors}
+
+---
+
+## Things I Never Want
+
+- Do not delete any data without asking me first
+- Do not send emails or texts automatically unless I have tested and approved it
+- Do not store tenant personal information (SSN, bank account numbers) in any file
+- Do not build something that requires me to learn a programming language to use it
+
+---
+
+## How to Start a Session With Me
+
+When I open a new chat, greet me briefly and ask:
+"What are you working on today?"
+
+Then wait for my answer. Do not suggest things unprompted.
+`;
+
+  document.getElementById('output').textContent = md;
+  document.getElementById('output-section').style.display = 'block';
+  document.getElementById('copy-btn').textContent = 'Copy to clipboard';
+  document.getElementById('copy-btn').className = 'copy-btn';
+
+  // Scroll to output
+  document.getElementById('output-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyOutput() {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.className = 'copy-btn copied';
+    setTimeout(() => {
+      btn.textContent = 'Copy to clipboard';
+      btn.className = 'copy-btn';
+    }, 2500);
+  });
+}
+</script>
+
+</body>
+</html>
