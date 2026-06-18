@@ -9,6 +9,12 @@ This guide gives you 5 starter prompts that will get you real results
 in your first 30 minutes. Pick the one that solves the most annoying
 problem in your day right now.
 
+> **Before you use these prompts:** Make sure you've filled in your tech stack
+> in `CLAUDE.md`. Claude reads that file at the start of every session — if you've
+> told it you use AppFolio and Gmail, it will automatically suggest how to connect
+> those tools instead of building something generic. The prompts below work without
+> it, but they work *much better* with it filled in.
+
 ---
 
 ## Starter Prompt 1 — Lease Expiration Tracker

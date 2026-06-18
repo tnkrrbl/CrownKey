@@ -74,14 +74,96 @@ Properties:
 
 ---
 
-## My Tools
+## My Tech Stack
 
-- **Email:** [your email] — I use this to communicate with tenants and owners
-- **Phone/Text:** I use [tool name or "manual texting"] for tenant texts
-- **Spreadsheets:** I currently track most things in Google Sheets / Excel
+This is every tool I use to run my business. When building something for me,
+always check this list first. If a tool has an API (a way to connect software
+to it), suggest using it. If I haven't filled something in, ask me before assuming.
 
-When building something for me, try to connect with these tools if possible.
-If you can't, explain why and suggest an alternative.
+### Property Management Software
+> Examples: AppFolio, Buildium, Yardi, Propertyware, Rent Manager, DoorLoop, TenantCloud, Hemlane
+```
+I use: [YOUR PM SOFTWARE]
+I use it for: [what you do in it — e.g. leases, maintenance, payments, reporting]
+Does it have an API or integrations? [Yes / No / Not sure]
+What I still do manually that this software should handle but doesn't: [...]
+```
+
+### Process & Workflow Software
+> Examples: LeadSimple, Aptly, Process Street, Monday.com, Notion, Trello, ClickUp
+```
+I use: [YOUR PROCESS TOOL or "none"]
+I use it for: [e.g. lead follow-up, move-in checklists, team SOPs]
+What processes I wish were automated: [...]
+```
+
+### Email
+> Examples: Gmail (Google Workspace), Outlook (Microsoft 365), Zoho Mail
+```
+I use: [YOUR EMAIL SYSTEM]
+I send emails to: [tenants / owners / vendors / all three]
+I currently write these emails manually: [list them]
+```
+
+### Internal Communication
+> Examples: Slack, Microsoft Teams, Google Chat, Discord
+```
+I use: [YOUR TEAM CHAT TOOL or "just email/text"]
+My team size: [number of people]
+We use it for: [e.g. maintenance updates, team announcements, owner communication]
+```
+
+### Phone System
+> Examples: RingCentral, Zoom Phone, Google Voice, Grasshopper, OpenPhone, Dialpad
+```
+I use: [YOUR PHONE SYSTEM or "my personal cell"]
+I use it for: [e.g. tenant calls, maintenance dispatch, owner calls]
+Does it support texting? [Yes / No]
+```
+
+### Tenant Communication & Texting
+> Examples: Twilio, OpenPhone, Podio, AppFolio messaging, Buildium messaging, manual texting
+```
+I use: [YOUR TEXTING TOOL or "manual texting from my phone"]
+I text tenants about: [e.g. rent reminders, maintenance updates, lease renewals]
+How many texts I send per week (roughly): [number]
+```
+
+### Lease & Document Signing
+> Examples: DocuSign, HelloSign (Dropbox Sign), DotLoop, Adobe Sign, built into PM software
+```
+I use: [YOUR SIGNING TOOL or "email PDF"]
+I use it for: [e.g. new leases, renewals, addendums]
+```
+
+### Payments & Rent Collection
+> Examples: AppFolio Pay, Buildium payments, Stripe, PaySimple, Zelle, check
+```
+I use: [YOUR PAYMENT SYSTEM]
+Tenants pay via: [online portal / check / Zelle / mix]
+Late fees: [how I currently track and charge them]
+```
+
+### Accounting
+> Examples: QuickBooks, Wave, Xero, built into PM software
+```
+I use: [YOUR ACCOUNTING TOOL or "built into my PM software"]
+I currently do this manually: [e.g. owner disbursements, expense tracking]
+```
+
+### Maintenance Coordination
+> Examples: Latchel, Maintenance Connection, built into PM software, phone/email
+```
+I use: [YOUR MAINTENANCE TOOL or "phone/email"]
+My vendor list lives in: [e.g. spreadsheet, contacts app, PM software]
+How I assign work orders today: [manual / automated / mix]
+```
+
+---
+
+When building something for me, always check this tech stack first.
+Prefer connecting to tools I already use over building something new.
+If a tool I listed has an API, tell me what's possible before we start building.
 
 ---
 
