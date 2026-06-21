@@ -51,22 +51,27 @@ It's the right tool for this job.
 
 ## Before You Come to Class
 
-Please do these 3 things the day before. Each takes about 5 minutes.
+Please do these 3 things before Thursday. Each takes about 5 minutes.
 
-**1. Create a Hostinger account**
-- Go to: hostinger.com
-- Click "Sign Up" — use your business email
-- Add a credit card (nothing is charged until you create a server)
+**1. Get your Anthropic API key**
+- Go to: console.anthropic.com
+- Create an account → add $20 in credits → create an API key
+- Copy the key and save it somewhere safe (Notes app is fine)
+- This is the key that connects your server to Claude's brain
 
-**2. Create a GitHub account**
+**2. Create a GitHub account (free)**
 - Go to: github.com
-- Click "Sign up" — use the same business email
+- Click "Sign up" — use your business email
 - Choose the free plan
 
-**3. Download Claude Code Desktop**
+**3. Download Claude Code Desktop (free)**
 - Go to: claude.ai/download
 - Download for Mac or Windows
 - Install it (double-click the installer, follow the prompts)
+
+**Bring your credit card to class.** We'll buy your server together on Day 1 —
+it takes 5 minutes and costs about $7/month. Doing it as a group means nobody
+gets stuck with a broken setup before they even arrive.
 
 That's it. Come to class with those three things done and you're ahead of the game.
 

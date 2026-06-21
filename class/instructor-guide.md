@@ -91,19 +91,31 @@ This runs 15–20 minutes including the debrief.
 
 **9:35 — Accounts check.**
 Ask who completed the pre-class homework:
-- Hands up: Hostinger account ✓
 - Hands up: GitHub account ✓
 - Hands up: Anthropic API key ✓
 - Hands up: Claude Code Desktop installed ✓
 
-For anyone missing accounts: pair them with someone who has theirs while they catch up.
+For anyone missing these: pair them with someone who has theirs while they catch up.
 Do NOT let the whole room wait for one person to create an account.
 
-**9:45 — Create the server together.**
+**Also confirm everyone has a credit card on them.** They'll need it in 10 minutes.
+
+**9:45 — Buy the server together.**
+Nobody has a server yet — that's intentional. You're doing this as a group so nobody
+gets stuck alone at home with a broken setup.
+
 Walk through Hostinger live on your screen. Students follow on theirs.
-Go slow. Narrate every click.
-Key moment: when the IP address appears. Ask everyone to write it down.
-Wait until every person has an IP address before moving on.
+Go slow. Narrate every click. Call out exactly what to select:
+- Plan: KVM 2 (the $7/month option)
+- OS: Ubuntu 24.04
+- Region: whatever is geographically closest to their market
+- Hostname: anything (wolf-garage is fine)
+
+Key moment: when the IP address appears. Ask everyone to write it down in their workbook.
+**Do not move on until every single person has an IP address on paper.**
+
+Have your helper circulate during checkout — credit card declines and email
+confirmations are the two common holdups here.
 
 **10:15 — SSH into the server.**
 Open Claude Code Desktop. Show the terminal panel.
