@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Email — CrownKey Email Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Nav injected by nav.js -->
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Review My Email</h1>
+      <p>Paste your email draft and get a professional review before you send.</p>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle" role="tablist" aria-label="Email mode">
+      <button class="mode-btn active" data-mode="a" role="tab" aria-selected="true" aria-controls="mode-a">
+        I have a draft
+      </button>
+      <button class="mode-btn" data-mode="b" role="tab" aria-selected="false" aria-controls="mode-b">
+        Help me write it
+      </button>
+    </div>
+
+    <!-- Mode A: I have a draft -->
+    <div id="mode-a" role="tabpanel">
+      <div class="card">
+        <div class="field">
+          <label for="email-textarea">Paste your email here</label>
+          <textarea id="email-textarea" class="tall" placeholder="Paste or type your full email here, including subject line if you have one…" aria-required="true"></textarea>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field mb-0">
+            <label for="recipient-select">Who is this going to?</label>
+            <select id="recipient-select" aria-required="true">
+              <option value="">— Choose —</option>
+              <option value="tenant">Tenant</option>
+              <option value="owner">Owner</option>
+              <option value="vendor">Vendor</option>
+            </select>
+          </div>
+          <div class="field mb-0">
+            <label for="sender-select-a">Who is sending this?</label>
+            <select id="sender-select-a" aria-required="true">
+              <option value="">— Choose —</option>
+              <option value="Susan">Susan</option>
+              <option value="Tiffany">Tiffany</option>
+              <option value="Maria">Maria</option>
+              <option value="Priya">Priya</option>
+              <option value="James">James</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Collapsible context -->
+        <div style="margin-top:16px;">
+          <button class="context-toggle" id="ctx-toggle-a" type="button" aria-expanded="false" aria-controls="ctx-field-a">
+            <span class="arrow">▶</span> Add context about this recipient (optional)
+          </button>
+          <div id="ctx-field-a" class="context-field">
+            <label for="ctx-input-a" class="sr-only">Recipient context</label>
+            <input type="text" id="ctx-input-a" placeholder="e.g., Long-term tenant, 5 years, first late payment">
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary" id="review-btn" type="button">
+            Review My Email
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode B: Help me write it -->
+    <div id="mode-b" class="hidden" role="tabpanel">
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field">
+            <label for="recipient-select-b">Who is this going to?</label>
+            <select id="recipient-select-b" aria-required="true">
+              <option value="">— Choose —</option>
+              <option value="tenant">Tenant</option>
+              <option value="owner">Owner</option>
+              <option value="vendor">Vendor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sender-select-b">Who is sending this?</label>
+            <select id="sender-select-b" aria-required="true">
+              <option value="">— Choose —</option>
+              <option value="Susan">Susan</option>
+              <option value="Tiffany">Tiffany</option>
+              <option value="Maria">Maria</option>
+              <option value="Priya">Priya</option>
+              <option value="James">James</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="situation-select">Choose a common situation</label>
+          <select id="situation-select">
+            <option value="">— Or describe it yourself below —</option>
+            <option value="late_rent_day3">First late rent reminder (Day 3)</option>
+            <option value="late_rent_day10">Late rent — formal notice (Day 10)</option>
+            <option value="lease_violation_first">Lease violation — first notice</option>
+            <option value="moveout_charge_dispute">Move-out charge dispute</option>
+            <option value="owner_repair_under500">Owner: repair under $500</option>
+            <option value="owner_repair_over500">Owner: repair over $500</option>
+            <option value="owner_tenant_complaint">Owner: tenant complaint</option>
+            <option value="owner_pattern_issues">Owner: pattern of tenant issues</option>
+            <option value="lease_renewal">Lease renewal offer</option>
+            <option value="vendor_work_order">Vendor work order</option>
+          </select>
+        </div>
+
+        <div id="situation-desc" class="field">
+          <label for="situation-desc-text">Or describe the situation</label>
+          <textarea id="situation-desc-text" placeholder="e.g., Tenant is 15 days late on rent. First time late. Good relationship. They mentioned car troubles last week."></textarea>
+        </div>
+
+        <!-- Collapsible context -->
+        <div style="margin-top:4px;">
+          <button class="context-toggle" id="ctx-toggle-b" type="button" aria-expanded="false" aria-controls="ctx-field-b">
+            <span class="arrow">▶</span> Add context about this recipient (optional)
+          </button>
+          <div id="ctx-field-b" class="context-field" style="margin-bottom:8px;">
+            <label for="ctx-input-b" class="sr-only">Recipient context</label>
+            <input type="text" id="ctx-input-b" placeholder="e.g., Owner is hands-off, prefers short updates">
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="btn btn-gold" id="generate-btn" type="button">
+            Generate Draft
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Results (rendered dynamically by app.js) -->
+    <div id="result-section" class="hidden" aria-live="polite" aria-label="Review results"></div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-msg" id="loading-msg">Reviewing your email…</div>
+  </div>
+
+  <script src="mock-api.js"></script>
+  <script src="nav.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

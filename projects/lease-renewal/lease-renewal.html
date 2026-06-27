@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lease Renewal Tracker — Crown Key Realty</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    color: #1a1a1a;
+    background: #f4f6f9;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header-brand { font-size: 18px; font-weight: 600; letter-spacing: 0.01em; }
+  .header-date { font-size: 13px; opacity: 0.75; }
+
+  /* ── Tabs ── */
+  .tab-bar {
+    background: #fff;
+    border-bottom: 1px solid #dce1ea;
+    padding: 0 28px;
+    display: flex;
+    gap: 0;
+  }
+  .tab {
+    padding: 14px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #5a6880;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s, border-color 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab:hover { color: #1e3a5f; }
+  .tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+
+  /* ── Page content ── */
+  .page { display: none; padding: 28px; max-width: 1100px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── Summary bar ── */
+  .summary-bar {
+    background: #fff;
+    border: 1px solid #dce1ea;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #3a4a60;
+  }
+  .summary-bar .dot { width: 10px; height: 10px; border-radius: 50%; background: #1e3a5f; flex-shrink: 0; }
+  .summary-bar strong { font-weight: 600; color: #1a1a1a; }
+
+  /* ── Tables ── */
+  .table-wrap { background: #fff; border: 1px solid #dce1ea; border-radius: 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead { background: #f0f3f8; }
+  th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #3a4a60;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #dce1ea;
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f0f2f6;
+    vertical-align: middle;
+    color: #1a1a1a;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Row urgency colors ── */
+  tr.urgent td { background: #fff5f5; }
+  tr.urgent td:first-child { border-left: 4px solid #e84040; }
+  tr.warning td { background: #fffbf0; }
+  tr.warning td:first-child { border-left: 4px solid #e8a000; }
+
+  /* ── Days badge ── */
+  .days-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .days-badge.red { background: #ffe4e4; color: #b91c1c; }
+  .days-badge.yellow { background: #fef3c7; color: #92400e; }
+  .days-badge.green { background: #dcfce7; color: #166534; }
+
+  /* ── Action buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s, border-color 0.12s;
+    white-space: nowrap;
+  }
+  .btn-email-60 { background: #e8f0fe; color: #1a56c4; border-color: #b8cffd; }
+  .btn-email-60:hover { background: #d1e3fd; }
+  .btn-email-30 { background: #fff3e0; color: #b45309; border-color: #fcd09a; }
+  .btn-email-30:hover { background: #ffe5b0; }
+  .btn-edit { background: #f0f4ff; color: #374da0; border-color: #c4cff8; }
+  .btn-edit:hover { background: #dce5ff; }
+  .btn-delete { background: #fff5f5; color: #c0392b; border-color: #f8c4c4; }
+  .btn-delete:hover { background: #ffe4e4; }
+  .btn-primary {
+    background: #1e3a5f;
+    color: #fff;
+    border-color: #1e3a5f;
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+  .btn-primary:hover { background: #16304f; }
+  .btn-secondary {
+    background: #fff;
+    color: #3a4a60;
+    border-color: #dce1ea;
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+  .btn-secondary:hover { background: #f0f3f8; }
+  .btn-save { background: #1e7a4a; color: #fff; border-color: #1e7a4a; }
+  .btn-save:hover { background: #155f3a; }
+  .btn-cancel-edit { background: #f0f3f8; color: #5a6880; border-color: #dce1ea; }
+  .btn-cancel-edit:hover { background: #e0e5f0; }
+
+  /* ── Add tenant form / edit row ── */
+  .add-row { display: none; }
+  .add-row.visible { display: table-row; }
+  .add-row td { background: #f8f9ff; border-top: 2px solid #1e3a5f; padding: 10px 14px; }
+
+  .inline-input {
+    padding: 6px 10px;
+    border: 1px solid #c4cff8;
+    border-radius: 5px;
+    font-size: 13px;
+    width: 100%;
+    font-family: inherit;
+    color: #1a1a1a;
+    background: #fff;
+  }
+  .inline-input:focus { outline: 2px solid #1e3a5f; outline-offset: 1px; }
+
+  /* ── Toolbar (above table) ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar h2 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    color: #7a8a9e;
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; margin-bottom: 4px; }
+  .empty-state .sub { font-size: 13px; color: #a0aab8; }
+
+  /* ── Modal overlay ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid #e8ecf2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: #7a8a9e;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .modal-close:hover { background: #f0f3f8; color: #1a1a1a; }
+  .modal-body { padding: 20px 22px; }
+  .modal-footer {
+    padding: 14px 22px 18px;
+    border-top: 1px solid #e8ecf2;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .email-subject {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3a4a60;
+    margin-bottom: 10px;
+  }
+  .email-body {
+    background: #f8f9ff;
+    border: 1px solid #dce1ea;
+    border-radius: 6px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: #1a1a1a;
+    user-select: text;
+    cursor: text;
+  }
+  .copy-success {
+    font-size: 12px;
+    color: #1e7a4a;
+    font-weight: 500;
+    display: none;
+    margin-left: 8px;
+  }
+  .copy-success.visible { display: inline; }
+
+  /* ── Confirm dialog ── */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 28px 28px 22px;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .confirm-box h4 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+  .confirm-box p { font-size: 14px; color: #5a6880; margin-bottom: 22px; line-height: 1.5; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-danger { background: #c0392b; color: #fff; border-color: #c0392b; padding: 8px 18px; font-size: 14px; border-radius: 6px; }
+  .btn-danger:hover { background: #a93226; }
+
+  /* ── Validation errors ── */
+  .field-error { font-size: 11px; color: #c0392b; margin-top: 3px; display: none; }
+  .field-error.visible { display: block; }
+  .inline-input.invalid { border-color: #c0392b; }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .page { padding: 16px; }
+    .header { padding: 14px 16px; }
+    .tab-bar { padding: 0 8px; }
+    .tab { padding: 12px 14px; font-size: 13px; }
+    th, td { padding: 9px 10px; font-size: 13px; }
+    .btn { padding: 4px 8px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-brand">Crown Key Realty — Lease Renewal Tracker</div>
+  <div class="header-date" id="header-date"></div>
+</header>
+
+<!-- ── Tabs ── -->
+<nav class="tab-bar" role="tablist">
+  <button class="tab active" role="tab" aria-selected="true" onclick="switchTab('dashboard')">Dashboard</button>
+  <button class="tab" role="tab" aria-selected="false" onclick="switchTab('tenants')">Tenant List</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- TAB 1 — DASHBOARD -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page active" id="tab-dashboard">
+  <div class="summary-bar">
+    <div class="dot"></div>
+    <span id="summary-text">Loading...</span>
+  </div>
+
+  <div class="table-wrap" id="dashboard-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tenant Name</th>
+          <th>Unit #</th>
+          <th>Lease End Date</th>
+          <th>Days Left</th>
+          <th>Email Actions</th>
+        </tr>
+      </thead>
+      <tbody id="dashboard-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- TAB 2 — TENANT LIST -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="page" id="tab-tenants">
+  <div class="toolbar">
+    <h2>All Tenants</h2>
+    <button class="btn btn-primary" onclick="toggleAddRow()">+ Add Tenant</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tenant Name</th>
+          <th>Unit #</th>
+          <th>Lease End Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tenant-tbody">
+        <!-- Add row (hidden until button clicked) -->
+        <tr class="add-row" id="add-row">
+          <td>
+            <input class="inline-input" id="new-name" placeholder="Full name" autocomplete="off">
+            <div class="field-error" id="err-name">Name is required.</div>
+          </td>
+          <td>
+            <input class="inline-input" id="new-unit" placeholder="e.g. 101A" autocomplete="off">
+            <div class="field-error" id="err-unit">Unit # is required.</div>
+          </td>
+          <td>
+            <input class="inline-input" id="new-date" type="date" autocomplete="off">
+            <div class="field-error" id="err-date">A valid lease end date is required.</div>
+          </td>
+          <td>
+            <button class="btn btn-save" onclick="saveNewTenant()">Save</button>
+            &nbsp;
+            <button class="btn btn-cancel-edit" onclick="cancelAdd()">Cancel</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- EMAIL MODAL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="email-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Renewal Email Draft</h3>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="email-subject" id="modal-subject"></div>
+      <div class="email-body" id="modal-body-text"></div>
+    </div>
+    <div class="modal-footer">
+      <span class="copy-success" id="copy-success">Copied!</span>
+      <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="copyEmail()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- CONFIRM DELETE DIALOG -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="confirm-overlay" id="confirm-overlay" role="dialog" aria-modal="true">
+  <div class="confirm-box">
+    <h4>Remove this tenant?</h4>
+    <p id="confirm-text">This will permanently remove the tenant from your list.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-yes">Yes, remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA LAYER — localStorage
+// ─────────────────────────────────────────────
+
+const STORAGE_KEY = 'ckrpm_tenants_v1';
+
+function loadTenants() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveTenants(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ─────────────────────────────────────────────
+// DATE UTILITIES
+// ─────────────────────────────────────────────
+
+// Return today as a plain YYYY-MM-DD string in local time
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+// Parse a YYYY-MM-DD string as a local-midnight Date (avoids UTC offset issues)
+function parseLocalDate(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// Days between today (local midnight) and a local Date
+function daysUntil(dateStr) {
+  const today = parseLocalDate(todayStr());
+  const target = parseLocalDate(dateStr);
+  if (!target) return null;
+  const diff = target - today;
+  return Math.round(diff / (1000 * 60 * 60 * 24));
+}
+
+// Format YYYY-MM-DD → "June 30, 2026"
+function formatDate(str) {
+  const d = parseLocalDate(str);
+  if (!d) return str;
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+// ─────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────
+
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const idx = name === 'dashboard' ? 0 : 1;
+  tabs[idx].classList.add('active');
+  tabs[idx].setAttribute('aria-selected', 'true');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'tenants') renderTenantList();
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────
+
+function renderDashboard() {
+  const tenants = loadTenants();
+  const tbody = document.getElementById('dashboard-tbody');
+  const summaryEl = document.getElementById('summary-text');
+
+  // Filter to ≤60 days, sort soonest first
+  const expiring = tenants
+    .map(t => ({ ...t, days: daysUntil(t.leaseEnd) }))
+    .filter(t => t.days !== null && t.days <= 60)
+    .sort((a, b) => a.days - b.days);
+
+  // Summary line
+  const urgent = expiring.filter(t => t.days <= 30).length;
+  const total = expiring.length;
+  const today = new Date();
+  const todayFormatted = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('header-date').textContent = todayFormatted;
+
+  if (total === 0) {
+    summaryEl.innerHTML = 'You\'re all clear — <strong>no leases expiring in the next 60 days.</strong>';
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">&#x2705;</div><p>No leases expiring in the next 60 days.</p><p class="sub">Check back here as renewal windows approach.</p></div></td></tr>';
+    return;
+  }
+
+  if (urgent > 0) {
+    summaryEl.innerHTML = '<strong>' + urgent + ' lease' + (urgent > 1 ? 's' : '') + '</strong> expiring within 30 days — action needed now. ' + total + ' total expiring within 60 days.';
+  } else {
+    summaryEl.innerHTML = '<strong>' + total + ' lease' + (total > 1 ? 's' : '') + '</strong> expiring within the next 60 days.';
+  }
+
+  tbody.innerHTML = expiring.map(t => {
+    const rowClass = t.days <= 30 ? 'urgent' : 'warning';
+    const badgeClass = t.days <= 30 ? 'red' : 'yellow';
+    const daysLabel = t.days < 0 ? 'Expired ' + Math.abs(t.days) + 'd ago' : t.days === 0 ? 'Today' : t.days + ' days';
+    return '<tr class="' + rowClass + '">' +
+      '<td>' + escHtml(t.name) + '</td>' +
+      '<td>' + escHtml(t.unit) + '</td>' +
+      '<td>' + formatDate(t.leaseEnd) + '</td>' +
+      '<td><span class="days-badge ' + badgeClass + '">' + daysLabel + '</span></td>' +
+      '<td style="white-space:nowrap;">' +
+        '<button class="btn btn-email-60" onclick="openEmailModal(\'' + t.id + '\', 60)">60-Day Email</button>' +
+        ' ' +
+        '<button class="btn btn-email-30" onclick="openEmailModal(\'' + t.id + '\', 30)">30-Day Email</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// TENANT LIST
+// ─────────────────────────────────────────────
+
+let editingId = null;
+
+function renderTenantList() {
+  editingId = null;
+  cancelAdd();
+
+  const tenants = loadTenants();
+  const tbody = document.getElementById('tenant-tbody');
+
+  // Keep the add-row as first child (it's already in HTML)
+  // Re-render data rows after it
+  const addRowEl = document.getElementById('add-row');
+
+  // Remove old data rows (keep add-row)
+  const oldRows = tbody.querySelectorAll('tr[data-tenant-id]');
+  oldRows.forEach(r => r.remove());
+
+  if (tenants.length === 0) {
+    const emptyRow = document.createElement('tr');
+    emptyRow.setAttribute('data-tenant-id', '__empty__');
+    emptyRow.innerHTML = '<td colspan="4"><div class="empty-state"><div class="icon">&#x1F4CB;</div><p>No tenants added yet.</p><p class="sub">Click "Add Tenant" to get started.</p></div></td>';
+    tbody.appendChild(emptyRow);
+    return;
+  }
+
+  const sorted = [...tenants].sort((a, b) => {
+    if (a.leaseEnd < b.leaseEnd) return -1;
+    if (a.leaseEnd > b.leaseEnd) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  sorted.forEach(t => {
+    const row = document.createElement('tr');
+    row.setAttribute('data-tenant-id', t.id);
+
+    const days = daysUntil(t.leaseEnd);
+    let badgeClass = 'green';
+    if (days !== null && days <= 30) badgeClass = 'red';
+    else if (days !== null && days <= 60) badgeClass = 'yellow';
+
+    row.innerHTML =
+      '<td>' + escHtml(t.name) + '</td>' +
+      '<td>' + escHtml(t.unit) + '</td>' +
+      '<td>' + formatDate(t.leaseEnd) + ' <span class="days-badge ' + badgeClass + '" style="font-size:11px;">' + (days !== null ? (days < 0 ? 'expired' : days + 'd') : '') + '</span></td>' +
+      '<td style="white-space:nowrap;">' +
+        '<button class="btn btn-edit" onclick="startEdit(\'' + t.id + '\')">Edit</button>' +
+        ' ' +
+        '<button class="btn btn-delete" onclick="confirmDelete(\'' + t.id + '\', \'' + escAttr(t.name) + '\')">Delete</button>' +
+      '</td>';
+    tbody.appendChild(row);
+  });
+}
+
+// ─── Add tenant ───
+
+function toggleAddRow() {
+  const row = document.getElementById('add-row');
+  const isVisible = row.classList.contains('visible');
+  if (isVisible) {
+    cancelAdd();
+  } else {
+    // Cancel any in-progress edit first
+    if (editingId) cancelEditById(editingId);
+    row.classList.add('visible');
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-unit').value = '';
+    document.getElementById('new-date').value = '';
+    clearFieldErrors();
+    document.getElementById('new-name').focus();
+  }
+}
+
+function cancelAdd() {
+  const row = document.getElementById('add-row');
+  row.classList.remove('visible');
+  clearFieldErrors();
+}
+
+function clearFieldErrors() {
+  ['name','unit','date'].forEach(f => {
+    document.getElementById('err-' + f).classList.remove('visible');
+    const inp = document.getElementById('new-' + f);
+    if (inp) inp.classList.remove('invalid');
+  });
+}
+
+function saveNewTenant() {
+  const name = document.getElementById('new-name').value.trim();
+  const unit = document.getElementById('new-unit').value.trim();
+  const date = document.getElementById('new-date').value;
+
+  let valid = true;
+  clearFieldErrors();
+
+  if (!name) {
+    document.getElementById('err-name').classList.add('visible');
+    document.getElementById('new-name').classList.add('invalid');
+    valid = false;
+  }
+  if (!unit) {
+    document.getElementById('err-unit').classList.add('visible');
+    document.getElementById('new-unit').classList.add('invalid');
+    valid = false;
+  }
+  if (!date || !isValidDate(date)) {
+    document.getElementById('err-date').classList.add('visible');
+    document.getElementById('new-date').classList.add('invalid');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const tenants = loadTenants();
+  tenants.push({ id: generateId(), name, unit, leaseEnd: date });
+  saveTenants(tenants);
+  cancelAdd();
+  renderTenantList();
+  renderDashboard();
+}
+
+function isValidDate(str) {
+  if (!str || str.length !== 10) return false;
+  const d = parseLocalDate(str);
+  return d instanceof Date && !isNaN(d);
+}
+
+// ─── Edit tenant ───
+
+function startEdit(id) {
+  if (editingId) cancelEditById(editingId);
+  cancelAdd();
+
+  const tenants = loadTenants();
+  const tenant = tenants.find(t => t.id === id);
+  if (!tenant) return;
+
+  editingId = id;
+  const row = document.querySelector('tr[data-tenant-id="' + id + '"]');
+  if (!row) return;
+
+  row.innerHTML =
+    '<td><input class="inline-input" id="edit-name-' + id + '" value="' + escAttr(tenant.name) + '"><div class="field-error" id="edit-err-name-' + id + '">Name is required.</div></td>' +
+    '<td><input class="inline-input" id="edit-unit-' + id + '" value="' + escAttr(tenant.unit) + '"><div class="field-error" id="edit-err-unit-' + id + '">Unit # is required.</div></td>' +
+    '<td><input class="inline-input" id="edit-date-' + id + '" type="date" value="' + escAttr(tenant.leaseEnd) + '"><div class="field-error" id="edit-err-date-' + id + '">A valid date is required.</div></td>' +
+    '<td style="white-space:nowrap;">' +
+      '<button class="btn btn-save" onclick="saveEdit(\'' + id + '\')">Save</button>' +
+      ' ' +
+      '<button class="btn btn-cancel-edit" onclick="cancelEditById(\'' + id + '\')">Cancel</button>' +
+    '</td>';
+
+  document.getElementById('edit-name-' + id).focus();
+}
+
+function cancelEditById(id) {
+  editingId = null;
+  renderTenantList();
+}
+
+function saveEdit(id) {
+  const name = document.getElementById('edit-name-' + id).value.trim();
+  const unit = document.getElementById('edit-unit-' + id).value.trim();
+  const date = document.getElementById('edit-date-' + id).value;
+
+  let valid = true;
+
+  if (!name) {
+    document.getElementById('edit-err-name-' + id).classList.add('visible');
+    document.getElementById('edit-name-' + id).classList.add('invalid');
+    valid = false;
+  }
+  if (!unit) {
+    document.getElementById('edit-err-unit-' + id).classList.add('visible');
+    document.getElementById('edit-unit-' + id).classList.add('invalid');
+    valid = false;
+  }
+  if (!date || !isValidDate(date)) {
+    document.getElementById('edit-err-date-' + id).classList.add('visible');
+    document.getElementById('edit-date-' + id).classList.add('invalid');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const tenants = loadTenants();
+  const idx = tenants.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  tenants[idx] = { ...tenants[idx], name, unit, leaseEnd: date };
+  saveTenants(tenants);
+  editingId = null;
+  renderTenantList();
+  renderDashboard();
+}
+
+// ─── Delete tenant ───
+
+let pendingDeleteId = null;
+
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('confirm-text').textContent = 'This will permanently remove ' + name + ' from your tenant list.';
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirm-overlay').classList.remove('open');
+}
+
+document.getElementById('confirm-yes').addEventListener('click', function() {
+  if (!pendingDeleteId) return;
+  const tenants = loadTenants().filter(t => t.id !== pendingDeleteId);
+  saveTenants(tenants);
+  closeConfirm();
+  renderTenantList();
+  renderDashboard();
+});
+
+// ─────────────────────────────────────────────
+// EMAIL MODAL
+// ─────────────────────────────────────────────
+
+function openEmailModal(tenantId, days) {
+  const tenants = loadTenants();
+  const tenant = tenants.find(t => t.id === tenantId);
+  if (!tenant) return;
+
+  const subjectEl = document.getElementById('modal-subject');
+  const bodyEl = document.getElementById('modal-body-text');
+  const titleEl = document.getElementById('modal-title');
+
+  const leaseEndFormatted = formatDate(tenant.leaseEnd);
+
+  if (days === 60) {
+    titleEl.textContent = '60-Day Renewal Email';
+    subjectEl.textContent = 'Subject: Your Lease Renewal — ' + tenant.unit;
+    bodyEl.textContent = [
+      'Hi ' + tenant.name + ',',
+      '',
+      "I hope you're doing well! I'm reaching out because your lease at " + tenant.unit + " is coming up for renewal on " + leaseEndFormatted + ". I want to make sure we connect early so there's plenty of time to talk through your options.",
+      '',
+      "If you're planning to stay — wonderful! I'd love to get your renewal squared away so you have peace of mind going into the new term. If your plans have changed, no worries at all — just let me know and we'll figure out next steps together.",
+      '',
+      "Please reply to this email or give me a call and we'll get things sorted quickly.",
+      '',
+      "Thanks so much, and I look forward to hearing from you!",
+      '',
+      'Warm regards,',
+      'Susan Goulding',
+      'Crown Key Realty Inc | Property Management',
+      'admin@crownkeyrealty.com'
+    ].join('\n');
+  } else {
+    titleEl.textContent = '30-Day Renewal Reminder';
+    subjectEl.textContent = 'Subject: Lease Renewal Reminder — ' + tenant.unit;
+    bodyEl.textContent = [
+      'Hi ' + tenant.name + ',',
+      '',
+      'Just a friendly reminder that your lease at ' + tenant.unit + ' is set to expire on ' + leaseEndFormatted + ' — that\'s just about 30 days away.',
+      '',
+      "If we haven't connected yet about your renewal, I'd love to touch base this week. Whether you're planning to renew or have decided to move on, I want to make sure we have a smooth transition either way.",
+      '',
+      "Please reply to this email or call me at your convenience — I'm always happy to help.",
+      '',
+      "Thanks again for being a great tenant, and I hope to hear from you soon!",
+      '',
+      'Warm regards,',
+      'Susan Goulding',
+      'Crown Key Realty Inc | Property Management',
+      'admin@crownkeyrealty.com'
+    ].join('\n');
+  }
+
+  document.getElementById('copy-success').classList.remove('visible');
+  document.getElementById('email-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('email-modal').classList.remove('open');
+}
+
+function copyEmail() {
+  const subject = document.getElementById('modal-subject').textContent;
+  const body = document.getElementById('modal-body-text').textContent;
+  const full = subject + '\n\n' + body;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(full).then(showCopied, fallbackCopy.bind(null, full));
+  } else {
+    fallbackCopy(full);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showCopied(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function showCopied() {
+  const el = document.getElementById('copy-success');
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 2500);
+}
+
+// ─────────────────────────────────────────────
+// ESCAPE HELPERS
+// ─────────────────────────────────────────────
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escAttr(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ─────────────────────────────────────────────
+// KEYBOARD ACCESSIBILITY
+// ─────────────────────────────────────────────
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('confirm-overlay').classList.contains('open')) closeConfirm();
+    else if (document.getElementById('email-modal').classList.contains('open')) closeModal();
+  }
+});
+
+// Click outside modal to close
+document.getElementById('email-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('confirm-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+
+(function init() {
+  // Set header date
+  const today = new Date();
+  document.getElementById('header-date').textContent = today.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+
+  renderDashboard();
+  renderTenantList();
+})();
+</script>
+</body>
+</html>

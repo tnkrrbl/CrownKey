@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scorecards — CrownKey Email Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Team Scorecards</h1>
+      <p>Monthly email excellence scores for the Crown Key team. Updated after each review.</p>
+    </div>
+
+    <div class="filter-bar">
+      <label for="view-select">View:</label>
+      <select id="view-select">
+        <option value="all">All Team Members</option>
+        <option value="Susan">Susan</option>
+        <option value="Tiffany">Tiffany</option>
+        <option value="Maria">Maria</option>
+        <option value="Priya">Priya</option>
+        <option value="James">James</option>
+      </select>
+    </div>
+
+    <div class="scorecards-grid" id="scorecards-grid">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Follow-up summary table -->
+    <div class="card" style="padding:0;overflow:hidden;" id="followup-summary-card">
+      <div style="padding:16px 18px 12px;background:var(--off-white);border-bottom:1px solid var(--gray-200);">
+        <h2 style="font-size:15px;font-weight:800;color:var(--navy);margin:0;">Follow-Up Completion</h2>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="followup-table" aria-label="Follow-up completion by team member">
+          <thead>
+            <tr>
+              <th>Team Member</th>
+              <th>On Time</th>
+              <th>Missed</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody id="followup-tbody">
+            <tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray-400);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-msg">Loading scorecards…</div>
+  </div>
+
+  <script src="mock-api.js"></script>
+  <script src="nav.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Nav.init();
+
+    const grid      = document.getElementById("scorecards-grid");
+    const ftbody    = document.getElementById("followup-tbody");
+    const viewSel   = document.getElementById("view-select");
+    const overlay   = document.getElementById("loading-overlay");
+
+    let allScores = [];
+
+    const MONTHS = ["Mar", "Apr", "May", "Jun"];
+
+    const TREND_META = {
+      up:   { arrow: "↑", cls: "trend-up",   label: "Up this month" },
+      down: { arrow: "↓", cls: "trend-down", label: "Down this month" },
+      flat: { arrow: "→", cls: "trend-flat", label: "Holding steady" }
+    };
+
+    function buildMiniChart(history) {
+      const max = Math.max(...history, 1);
+      const bars = history.map((val, i) => {
+        const pct = Math.round((val / 10) * 100);
+        const isCurrent = i === history.length - 1;
+        return `
+          <div class="bar-wrap">
+            <div class="bar${isCurrent ? " current" : ""}" style="height:${pct}%;" title="${val}/10"></div>
+            <div class="bar-mo">${MONTHS[i] || ""}</div>
+          </div>`;
+      }).join("");
+
+      return `
+        <div class="mini-chart">
+          <div class="mini-chart-label">4-Month Trend</div>
+          <div class="bars">${bars}</div>
+        </div>`;
+    }
+
+    function buildScorecard(person) {
+      const trend = TREND_META[person.trend] || TREND_META.flat;
+      const card  = document.createElement("div");
+      card.className = "scorecard";
+      card.innerHTML = `
+        <div class="scorecard-name">${escHtml(person.name)}</div>
+        <div class="scorecard-score">
+          <span class="scorecard-num">${person.monthly_avg.toFixed(1)}</span>
+          <span class="scorecard-denom">/10</span>
+          <span class="${trend.cls}" style="margin-left:8px;font-size:20px;" title="${trend.label}" aria-label="${trend.label}">${trend.arrow}</span>
+        </div>
+        <div class="scorecard-meta">
+          ${person.emails} email${person.emails !== 1 ? "s" : ""} reviewed this month
+        </div>
+        ${buildMiniChart(person.history)}
+      `;
+      return card;
+    }
+
+    function renderScores(scores) {
+      grid.innerHTML = "";
+      const filtered = viewSel.value === "all"
+        ? scores
+        : scores.filter(s => s.name === viewSel.value);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-text">No scorecard found.</div></div>`;
+        return;
+      }
+
+      filtered.forEach(p => grid.appendChild(buildScorecard(p)));
+    }
+
+    function renderFollowupTable(scores) {
+      ftbody.innerHTML = "";
+      const filtered = viewSel.value === "all"
+        ? scores
+        : scores.filter(s => s.name === viewSel.value);
+
+      filtered.forEach(p => {
+        const total = p.followups_on_time + p.followups_missed;
+        const rate  = total === 0 ? "—" : Math.round((p.followups_on_time / total) * 100) + "%";
+        const rateColor = total === 0 ? "var(--gray-400)"
+          : p.followups_missed === 0 ? "var(--green)"
+          : p.followups_missed >= 2  ? "var(--red)"
+          : "var(--yellow)";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="font-weight:600;">${escHtml(p.name)}</td>
+          <td style="color:var(--green);font-weight:600;">${p.followups_on_time}</td>
+          <td style="color:${p.followups_missed > 0 ? "var(--red)" : "var(--gray-400)"};font-weight:600;">${p.followups_missed}</td>
+          <td style="font-weight:700;color:${rateColor};">${rate}</td>
+        `;
+        ftbody.appendChild(tr);
+      });
+    }
+
+    viewSel.addEventListener("change", () => {
+      renderScores(allScores);
+      renderFollowupTable(allScores);
+    });
+
+    // Load
+    overlay.classList.add("active");
+    fetch("/api/scores")
+      .then(r => r.json())
+      .then(data => {
+        overlay.classList.remove("active");
+        allScores = data.scores || [];
+        renderScores(allScores);
+        renderFollowupTable(allScores);
+      })
+      .catch(() => {
+        overlay.classList.remove("active");
+        grid.innerHTML = `<div class="card" style="border-left:4px solid var(--red);grid-column:1/-1;"><p style="color:var(--red);font-weight:600;">Could not load scorecards. Please refresh.</p></div>`;
+      });
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  });
+  </script>
+</body>
+</html>
