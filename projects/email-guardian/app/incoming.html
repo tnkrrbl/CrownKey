@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incoming Email — CrownKey Email Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Analyze Incoming Email</h1>
+      <p>Paste an email someone sent to you. We'll read the tone, flag any risk, and suggest a reply opening.</p>
+    </div>
+
+    <div class="card" id="incoming-form-card">
+      <div class="field">
+        <label for="incoming-textarea">Paste the email you received</label>
+        <textarea id="incoming-textarea" class="tall" placeholder="Paste the full email here, including any subject line…" aria-required="true"></textarea>
+      </div>
+
+      <div class="field mb-0">
+        <label for="sender-type-select">Who sent this?</label>
+        <select id="sender-type-select" aria-required="true">
+          <option value="">— Choose —</option>
+          <option value="tenant">Tenant</option>
+          <option value="owner">Owner</option>
+          <option value="vendor">Vendor</option>
+        </select>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn btn-primary" id="analyze-btn" type="button">Analyze This Email</button>
+      </div>
+    </div>
+
+    <!-- Result (dynamic) -->
+    <div id="incoming-result" class="hidden" aria-live="polite"></div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-msg" id="loading-msg">Analyzing the email…</div>
+  </div>
+
+  <script src="mock-api.js"></script>
+  <script src="nav.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Nav.init();
+
+    const analyzeBtn  = document.getElementById("analyze-btn");
+    const resultDiv   = document.getElementById("incoming-result");
+    const overlay     = document.getElementById("loading-overlay");
+
+    function showLoading() { overlay.classList.add("active"); }
+    function hideLoading() { overlay.classList.remove("active"); }
+
+    function showToast(msg) {
+      let t = document.getElementById("g-toast");
+      if (!t) { t = document.createElement("div"); t.id = "g-toast"; t.className = "toast"; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    const TONE_META = {
+      frustrated:  { label: "Frustrated",  cls: "tone-frustrated", icon: "😤" },
+      angry:       { label: "Angry",        cls: "tone-angry",      icon: "😠" },
+      urgent:      { label: "Urgent",       cls: "tone-urgent",     icon: "⚡" },
+      confused:    { label: "Confused",     cls: "tone-confused",   icon: "❓" },
+      neutral:     { label: "Neutral",      cls: "tone-neutral",    icon: "😐" },
+      threatening: { label: "Threatening",  cls: "tone-threatening",icon: "⚠️" }
+    };
+
+    analyzeBtn.addEventListener("click", async () => {
+      const emailText   = document.getElementById("incoming-textarea").value.trim();
+      const senderType  = document.getElementById("sender-type-select").value;
+
+      if (!emailText) { alert("Please paste the email before clicking Analyze."); return; }
+
+      showLoading();
+
+      try {
+        const res  = await fetch("/api/incoming", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emailText, senderType })
+        });
+        const data = await res.json();
+        hideLoading();
+        renderResult(data, emailText);
+      } catch (err) {
+        hideLoading();
+        resultDiv.classList.remove("hidden");
+        resultDiv.innerHTML = `<div class="card" style="border-left:4px solid var(--red);"><p style="color:var(--red);font-weight:600;">Something went wrong. Please try again.</p></div>`;
+        console.error(err);
+      }
+    });
+
+    function renderResult(data, originalEmail) {
+      const tone = TONE_META[data.tone] || TONE_META["neutral"];
+      const riskCls = { low: "risk-low", medium: "risk-medium", high: "risk-high" }[data.risk] || "risk-low";
+
+      resultDiv.classList.remove("hidden");
+      resultDiv.innerHTML = `
+        <div class="card">
+          <h2 style="font-size:16px;font-weight:800;color:var(--navy);margin-bottom:16px;">Analysis Result</h2>
+
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+            <span style="font-size:13px;font-weight:700;color:var(--gray-600);">Tone</span>
+            <span class="tone-badge ${tone.cls}">${tone.icon} ${tone.label}</span>
+          </div>
+
+          <div class="risk-row">
+            <span class="risk-label">Risk Level</span>
+            <span class="risk-pill ${riskCls}">${capitalize(data.risk)}</span>
+          </div>
+
+          ${data.summary ? `
+            <div style="margin:14px 0;">
+              <p style="font-size:13px;font-weight:700;color:var(--gray-600);margin-bottom:6px;">Summary</p>
+              <p style="font-size:14px;color:var(--gray-800);line-height:1.6;">${escHtml(data.summary)}</p>
+            </div>
+          ` : ""}
+
+          <hr class="section-divider">
+
+          <div class="suggestion-box">
+            <div class="suggestion-label">Suggested Reply Opening</div>
+            <div id="suggested-opening">${escHtml(data.suggested_opening || "")}</div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-primary btn-sm" id="start-reply-btn">Start My Reply</button>
+            <button class="btn btn-outline btn-sm" id="copy-opening-btn">Copy Opening</button>
+          </div>
+        </div>
+      `;
+
+      resultDiv.querySelector("#start-reply-btn").addEventListener("click", () => {
+        const opening = data.suggested_opening || "";
+        // Store for index.html to pick up
+        sessionStorage.setItem("ck_prefill_email", opening);
+        window.location.href = "index.html?prefill=1";
+      });
+
+      resultDiv.querySelector("#copy-opening-btn").addEventListener("click", () => {
+        const text = data.suggested_opening || "";
+        navigator.clipboard.writeText(text).then(() => showToast("Opening copied."))
+          .catch(() => showToast("Could not copy — please copy manually."));
+      });
+
+      resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
+
+    // Handle prefill from incoming analysis
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("prefill") === "1") {
+      const saved = sessionStorage.getItem("ck_prefill_email");
+      if (saved) {
+        const ta = document.getElementById("incoming-textarea");
+        if (ta) ta.value = saved;
+        sessionStorage.removeItem("ck_prefill_email");
+      }
+    }
+  });
+  </script>
+</body>
+</html>

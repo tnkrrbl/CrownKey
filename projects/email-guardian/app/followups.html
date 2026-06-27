@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Follow-Up Tracker — CrownKey Email Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Follow-Up Tracker</h1>
+      <p>All open commitments detected from your sent emails. Mark them complete when done.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <label for="filter-status">Status:</label>
+      <select id="filter-status">
+        <option value="all">All</option>
+        <option value="pending">Pending</option>
+        <option value="overdue">Overdue</option>
+        <option value="complete">Completed</option>
+      </select>
+
+      <label for="filter-person" style="margin-left:8px;">Assigned to:</label>
+      <select id="filter-person">
+        <option value="all">Everyone</option>
+        <option value="Susan">Susan</option>
+        <option value="Tiffany">Tiffany</option>
+        <option value="Maria">Maria</option>
+        <option value="Priya">Priya</option>
+        <option value="James">James</option>
+      </select>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="data-table-wrap">
+        <table class="data-table" id="followups-table" aria-label="Follow-up items">
+          <thead>
+            <tr>
+              <th>Recipient</th>
+              <th>Commitment Made</th>
+              <th>Due Date</th>
+              <th>Assigned To</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="followups-tbody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:32px;color:var(--gray-400);">Loading follow-ups…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p id="empty-msg" class="hidden" style="text-align:center;color:var(--gray-400);padding:32px 0;font-size:15px;">
+      No follow-ups match this filter.
+    </p>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-msg">Loading follow-ups…</div>
+  </div>
+
+  <script src="mock-api.js"></script>
+  <script src="nav.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Nav.init();
+
+    const tbody       = document.getElementById("followups-tbody");
+    const filterStatus= document.getElementById("filter-status");
+    const filterPerson= document.getElementById("filter-person");
+    const overlay     = document.getElementById("loading-overlay");
+    const emptyMsg    = document.getElementById("empty-msg");
+
+    let allItems = [];
+
+    function showToast(msg) {
+      let t = document.getElementById("g-toast");
+      if (!t) { t = document.createElement("div"); t.id="g-toast"; t.className="toast"; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    function statusPill(status) {
+      const map = {
+        pending:  '<span class="status-pill pill-pending">Pending</span>',
+        complete: '<span class="status-pill pill-complete">Complete</span>',
+        overdue:  '<span class="status-pill pill-overdue">Overdue</span>'
+      };
+      return map[status] || status;
+    }
+
+    function formatDate(d) {
+      if (!d) return "—";
+      const dt = new Date(d + "T00:00:00");
+      return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function renderTable(items) {
+      tbody.innerHTML = "";
+      const visible = items.filter(item => {
+        const sv = filterStatus.value;
+        const pv = filterPerson.value;
+        if (sv !== "all" && item.status !== sv) return false;
+        if (pv !== "all" && item.assigned_to !== pv) return false;
+        return true;
+      });
+
+      emptyMsg.classList.toggle("hidden", visible.length > 0);
+
+      if (visible.length === 0) {
+        tbody.innerHTML = "";
+        return;
+      }
+
+      visible.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.id = `row-${item.id}`;
+        tr.innerHTML = `
+          <td style="font-weight:600;">${escHtml(item.recipient)}</td>
+          <td style="font-size:13px;color:var(--gray-600);max-width:220px;">${escHtml(item.promise)}</td>
+          <td style="white-space:nowrap;">${formatDate(item.due)}</td>
+          <td>${escHtml(item.assigned_to)}</td>
+          <td>${statusPill(item.status)}</td>
+          <td>
+            ${item.status !== "complete"
+              ? `<button class="btn btn-green btn-sm mark-complete-btn" data-id="${item.id}" aria-label="Mark complete for ${escHtml(item.recipient)}">Mark Complete</button>`
+              : `<span style="color:var(--gray-400);font-size:13px;">Done</span>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Wire complete buttons
+      tbody.querySelectorAll(".mark-complete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = parseInt(btn.dataset.id);
+          btn.disabled = true;
+          btn.textContent = "Saving…";
+
+          try {
+            await fetch("/api/followups/" + id, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: "complete" })
+            });
+            // Update local data
+            const item = allItems.find(i => i.id === id);
+            if (item) item.status = "complete";
+            renderTable(allItems);
+            showToast("Follow-up marked complete.");
+          } catch (err) {
+            btn.disabled = false;
+            btn.textContent = "Mark Complete";
+            showToast("Could not save — please try again.");
+          }
+        });
+      });
+    }
+
+    filterStatus.addEventListener("change", () => renderTable(allItems));
+    filterPerson.addEventListener("change", () => renderTable(allItems));
+
+    // Load data
+    overlay.classList.add("active");
+    fetch("/api/followups")
+      .then(r => r.json())
+      .then(data => {
+        overlay.classList.remove("active");
+        allItems = data.followups || [];
+        renderTable(allItems);
+      })
+      .catch(() => {
+        overlay.classList.remove("active");
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:32px;">Could not load follow-ups. Please refresh.</td></tr>`;
+      });
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  });
+  </script>
+</body>
+</html>

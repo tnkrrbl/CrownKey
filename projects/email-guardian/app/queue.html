@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Susan's Queue — CrownKey Email Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="page-wrap">
+    <div class="page-header">
+      <h1>Susan's Approval Queue</h1>
+      <p>Emails flagged for your review before they are sent. Each one needs your decision.</p>
+    </div>
+
+    <div id="queue-list" aria-live="polite">
+      <p style="text-align:center;color:var(--gray-400);padding:32px 0;">Loading queue…</p>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-msg">Loading queue…</div>
+  </div>
+
+  <script src="mock-api.js"></script>
+  <script src="nav.js"></script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    Nav.init();
+
+    const queueList = document.getElementById("queue-list");
+    const overlay   = document.getElementById("loading-overlay");
+
+    function showToast(msg) {
+      let t = document.getElementById("g-toast");
+      if (!t) { t = document.createElement("div"); t.id="g-toast"; t.className="toast"; document.body.appendChild(t); }
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function renderQueue(items) {
+      queueList.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        queueList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">✓</div>
+            <div class="empty-state-text" style="color:var(--green);font-weight:700;font-size:17px;">Queue is clear</div>
+            <div class="empty-state-text" style="margin-top:6px;">No emails are waiting for your review.</div>
+          </div>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const el = buildQueueItem(item);
+        queueList.appendChild(el);
+      });
+    }
+
+    function buildQueueItem(item) {
+      const wrap = document.createElement("div");
+      wrap.className = "queue-item";
+      wrap.id = `queue-item-${item.id}`;
+
+      wrap.innerHTML = `
+        <div class="queue-item-header">
+          <div>
+            <div class="queue-sender">${escHtml(item.sender)}</div>
+            <div class="queue-meta">To: ${escHtml(item.recipient_type)} &nbsp;·&nbsp; ${escHtml(item.submitted)}</div>
+          </div>
+          <span class="status-pill pill-overdue" style="align-self:flex-start;">Needs Review</span>
+        </div>
+
+        <div class="queue-flag-reason">
+          <span aria-hidden="true">🚩</span>
+          <span>${escHtml(item.flag_reason)}</span>
+        </div>
+
+        <button class="queue-toggle-btn" data-id="${item.id}" aria-expanded="false" aria-controls="email-preview-${item.id}">
+          <span class="preview-arrow">▶</span> Show email
+        </button>
+
+        <div class="queue-email-preview" id="email-preview-${item.id}" role="region" aria-label="Email content">
+          <pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.7;margin:0;">${escHtml(item.email_text)}</pre>
+        </div>
+
+        <!-- Inline editor (hidden until "Edit Then Approve") -->
+        <textarea class="inline-editor" id="editor-${item.id}" aria-label="Edit email before approving"></textarea>
+
+        <div class="queue-actions">
+          <button class="btn btn-green btn-sm approve-btn" data-id="${item.id}">Approve As-Is</button>
+          <button class="btn btn-gold btn-sm edit-btn" data-id="${item.id}">Edit Then Approve</button>
+          <button class="btn btn-red btn-sm sendback-btn" data-id="${item.id}">Send Back with Note</button>
+        </div>
+
+        <!-- Send-back note (hidden) -->
+        <div id="sendback-form-${item.id}" class="hidden" style="padding:0 18px 16px;">
+          <label for="sendback-note-${item.id}" style="font-size:13px;margin-bottom:6px;">What needs to be fixed?</label>
+          <textarea id="sendback-note-${item.id}" style="min-height:80px;margin-bottom:8px;" placeholder="e.g., Please remove the sentence about behavior. Rephrase the non-renewal notice without citing the reason."></textarea>
+          <button class="btn btn-red btn-sm confirm-sendback-btn" data-id="${item.id}">Send Back</button>
+        </div>
+
+        <!-- Resolved state (hidden) -->
+        <div id="resolved-${item.id}" class="hidden" style="padding:14px 18px;background:var(--green-bg);border-top:1px solid #A8E6C3;">
+          <p style="color:var(--green);font-weight:700;font-size:14px;" id="resolved-msg-${item.id}"></p>
+        </div>
+      `;
+
+      // Set textarea value safely (avoid HTML entity encoding via innerHTML)
+      wrap.querySelector(`#editor-${item.id}`).value = item.email_text;
+
+      // Toggle email preview
+      wrap.querySelector(".queue-toggle-btn").addEventListener("click", function () {
+        const preview = document.getElementById(`email-preview-${item.id}`);
+        const isOpen  = preview.classList.toggle("open");
+        this.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        this.querySelector(".preview-arrow").textContent = isOpen ? "▼" : "▶";
+        this.querySelector(".preview-arrow").nextSibling.textContent = isOpen ? " Hide email" : " Show email";
+      });
+
+      // Approve As-Is
+      wrap.querySelector(".approve-btn").addEventListener("click", async () => {
+        await resolveItem(item.id, "approved_asis", null, wrap);
+      });
+
+      // Edit Then Approve — toggle inline editor
+      wrap.querySelector(".edit-btn").addEventListener("click", function () {
+        const editor = document.getElementById(`editor-${item.id}`);
+        const isOpen = editor.classList.toggle("open");
+        this.textContent = isOpen ? "Approve This Edit" : "Edit Then Approve";
+
+        if (!isOpen) {
+          // They clicked "Approve This Edit"
+          const editedText = editor.value.trim();
+          resolveItem(item.id, "approved_edited", editedText, wrap);
+        } else {
+          // Show editor, hide preview
+          const preview = document.getElementById(`email-preview-${item.id}`);
+          preview.classList.add("open");
+        }
+      });
+
+      // Send Back with Note — show note form
+      wrap.querySelector(".sendback-btn").addEventListener("click", () => {
+        const form = document.getElementById(`sendback-form-${item.id}`);
+        form.classList.toggle("hidden");
+      });
+
+      // Confirm send back
+      wrap.querySelector(".confirm-sendback-btn").addEventListener("click", async () => {
+        const note = document.getElementById(`sendback-note-${item.id}`).value.trim();
+        if (!note) { alert("Please write a note explaining what needs to be fixed."); return; }
+        await resolveItem(item.id, "sent_back", note, wrap);
+      });
+
+      return wrap;
+    }
+
+    async function resolveItem(id, action, payload, wrap) {
+      try {
+        await fetch("/api/queue/" + id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, payload })
+        });
+
+        // Show resolved state
+        const resolved = document.getElementById(`resolved-${id}`);
+        const msg      = document.getElementById(`resolved-msg-${id}`);
+        resolved.classList.remove("hidden");
+
+        if (action === "approved_asis")    msg.textContent = "Approved and sent to team member.";
+        if (action === "approved_edited")  msg.textContent = "Edited version approved and returned to team member.";
+        if (action === "sent_back")        msg.textContent = "Sent back with your note. Team member will be notified.";
+
+        // Disable all action buttons
+        wrap.querySelectorAll(".queue-actions .btn").forEach(b => b.disabled = true);
+        showToast("Decision saved.");
+      } catch (err) {
+        showToast("Could not save decision — please try again.");
+        console.error(err);
+      }
+    }
+
+    // Load queue
+    overlay.classList.add("active");
+    fetch("/api/queue")
+      .then(r => r.json())
+      .then(data => {
+        overlay.classList.remove("active");
+        renderQueue(data.items || []);
+      })
+      .catch(() => {
+        overlay.classList.remove("active");
+        queueList.innerHTML = `<div class="card" style="border-left:4px solid var(--red);"><p style="color:var(--red);font-weight:600;">Could not load the queue. Please refresh the page.</p></div>`;
+      });
+  });
+  </script>
+</body>
+</html>

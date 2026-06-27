@@ -17,9 +17,9 @@ the task genuinely doesn't match any specialist's domain.
 
 ## Who I Am
 
-My name is [YOUR NAME]. I am a property manager.
-My company is called [YOUR COMPANY NAME].
-I manage [NUMBER] units across [CITY/AREA].
+My name is Susan Goulding. I am a property manager.
+My company is called Crown Key Realty Inc (CKRPM).
+I manage 200 units across Tracy, Mountain House, Lathrop, Manteca, Ripon, River Islands, Tracy Hills, and Livermore, CA.
 
 I am NOT a software developer. I am a business operator using AI to automate
 repetitive tasks and run my business better. Keep everything as simple as possible.
@@ -151,8 +151,8 @@ Full specs for each specialist: `.claude/agents/`
 ## My Portfolio
 
 ```
-Portfolio size: [NUMBER] units
-Market(s): [CITY/AREA]
+Portfolio size: 200 units
+Market(s): Tracy, Mountain House, Lathrop, Manteca, Ripon, River Islands, Tracy Hills, Livermore, CA
 ```
 
 **Do not list individual properties here.** Property data lives in my PM software
@@ -174,70 +174,63 @@ When building something for me, always check this list first.
 Prefer connecting to tools I already use over building something new.
 
 ### Property Management Software
-> Examples: AppFolio, Buildium, Yardi, Propertyware, Rent Manager, DoorLoop, TenantCloud
 ```
-I use: [YOUR PM SOFTWARE]
-I use it for: [leases, maintenance, payments, reporting]
-What I still do manually: [...]
+I use: AppFolio
+I use it for: leases, lease signing, rent payments, accounting, maintenance requests, reporting
 ```
 
 ### Process & Workflow Software
-> Examples: LeadSimple, Aptly, Process Street, Monday.com, Notion
 ```
-I use: [YOUR PROCESS TOOL or "none"]
-I use it for: [lead follow-up, move-in checklists, SOPs]
+I use: LeadSimple, Notion, Google Drive
+I use LeadSimple for: lead follow-up, tenant communication, One Inbox (all inbound messages)
+I use Notion for: SOPs, internal documentation
+I use Google Drive for: file storage and sharing
 ```
 
 ### Email
-> Examples: Gmail (Google Workspace), Outlook (Microsoft 365)
 ```
-I use: [YOUR EMAIL SYSTEM]
-I send emails to: [tenants / owners / vendors / all three]
+I use: Gmail
+I send emails to: tenants, owners, and vendors
 ```
 
 ### Internal Communication
-> Examples: Slack, Microsoft Teams, Google Chat
 ```
-I use: [YOUR TEAM CHAT or "just email/text"]
-My team size: [number of people]
+I use: Slack, email, and text
+My team size: 2 part-time + 3 remote full-time (5 total)
 ```
 
 ### Phone System
-> Examples: RingCentral, Zoom Phone, Google Voice, OpenPhone
 ```
-I use: [YOUR PHONE SYSTEM or "my personal cell"]
-Does it support texting? [Yes / No]
+I use: MightCall (business line), LeadSimple (calling), and my personal cell
+Does it support texting? Yes (LeadSimple and MightCall)
 ```
 
 ### Tenant Communication & Texting
-> Examples: OpenPhone, Twilio, built into PM software, manual texting
 ```
-I use: [YOUR TEXTING TOOL]
-I text tenants about: [rent reminders, maintenance updates, renewals]
+I use: LeadSimple One Inbox
+I text tenants about: rent reminders, maintenance updates, renewals, general communication
 ```
 
 ### Lease & Document Signing
-> Examples: DocuSign, HelloSign, DotLoop, Adobe Sign
 ```
-I use: [YOUR SIGNING TOOL]
+I use: AppFolio (built-in e-signing)
 ```
 
 ### Payments & Rent Collection
 ```
-I use: [YOUR PAYMENT SYSTEM]
-Tenants pay via: [online portal / check / Zelle / mix]
+I use: AppFolio
+Tenants pay via: AppFolio online portal
 ```
 
 ### Accounting
-> Examples: QuickBooks, Wave, Xero
 ```
-I use: [YOUR ACCOUNTING TOOL]
+I use: AppFolio
 ```
 
 ### Maintenance Coordination
 ```
-I use: [YOUR MAINTENANCE TOOL or "phone/email"]
-My vendor list lives in: [spreadsheet / contacts / PM software]
+I use: Property Meld (work orders and vendor coordination)
+AppFolio is used for initial maintenance request intake
 ```
 
 ---
